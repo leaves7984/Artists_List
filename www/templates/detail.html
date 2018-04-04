@@ -1,0 +1,19 @@
+
+<ion-view title="Detail">
+  <ion-header-bar class="bar-dark">
+    <button class="button button-icon ion-ios-arrow-back"
+            ng-click="goBack()"></button>
+    <h2 class="title">More Info</h2>
+  </ion-header-bar>
+  <ion-content>
+    <ion-list class="list-inset">
+      <ion-item class="item-text-wrap">
+        <img ng-src="img/{{detail.shortname}}_tn.jpg"
+             alt="{{ detail.name }} Photo">
+        <h2>{{ detail.name }}</h2>
+        <h3>{{ detail.reknown }}</h3>
+        <p>{{ detail.bio }}</p>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>

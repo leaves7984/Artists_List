@@ -1,0 +1,23 @@
+<ion-view title="Create a new account">
+  <ion-header-bar class="bar-dark">
+    <button class="button button-icon ion-ios-arrow-back"
+            ng-click="goBack()"></button>
+    <h2 class="title">Register</h2>
+  </ion-header-bar>
+  <ion-content class="has-subheader padding">
+    <form>
+      <div class="card">
+        <ion-item class="item-input">
+          <span class="input-label">Username</span>
+          <input type="text" ng-model="data.username" placeholder="Username">
+        </ion-item>
+        <ion-item class="item-input">
+          <span class="input-label" >Password</span>
+          <input type="password" ng-model="data.password" placeholder="Password">
+        </ion-item>
+      </div>
+      <button class="button button-block button-positive" ng-click="SignUp(data)">Sign Up</button>
+    </form>
+
+  </ion-content>
+</ion-view>

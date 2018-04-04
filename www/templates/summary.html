@@ -1,0 +1,40 @@
+<ion-view view-title="Summary">
+  <ion-header-bar class="bar-dark">
+    <button class="button button-icon ion-minus-circled"
+            ng-click="data.ShowDeleted = !data.ShowDeleted; data.ShowReorder=false"></button>
+    <h2 class="title">Summary</h2>
+
+    <button class="button button-icon ion-plus-round" ng-click="jumpToUrl()"></button>
+
+  </ion-header-bar>
+  <div class="bar bar-subheader item-input-inset bar-light">
+    <label class="item-input-wrapper">
+      <i class="icon ion-search placeholder-icon"></i>
+      <input type="search" ng-model ="query" placeholder="Search">
+    </label>
+  </div>
+  <ion-content class="has-subheader">
+    <ion-refresher on-refresh="doRefresh()"></ion-refresher>
+    <h1>Simple Line chart for Ionic</h1>
+    <canvas id="pie" class="chart chart-pie"
+            chart-data="data" chart-labels="labels" chart-options="options">
+    </canvas>
+
+    <div ng-repeat="(dayIndex, day) in calendar">
+      <h2>{{day.date| date:'yyyy-MM-dd HH:mm:ss'}}</h2>
+      <ion-list class="item-icon-right item-text-wrap" show-delete="data.ShowDeleted">
+        <ion-item ng-class="{'star': item.star}" ng-repeat='item in day.schedule|filter: query'>
+
+          <h2>{{item.time}}min</h2>
+          <h3>{{item.sports}}</h3>
+          {{item.description}}
+          <button class="button button-clear icon ion-star button-assertive"
+                  ng-click="toggleStar(item)" ng-show="item.star"></button>
+          <ion-option-button class="button-dark" ng-click="toggleStar(item)">
+            <i class="icon ion-star"></i></ion-option-button>
+          <ion-delete-button class="ion-minus-circled" ng-click="onItemDelete(dayIndex,item)"></ion-delete-button>
+        </ion-item>
+      </ion-list>
+    </div>
+  </ion-content>
+</ion-view>

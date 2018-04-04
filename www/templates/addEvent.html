@@ -1,0 +1,48 @@
+
+<ion-view title="AddNewEvent">
+  <ion-header-bar class="bar-dark">
+    <button class="button button-icon ion-close-round"
+            ng-click="goBack()"></button>
+    <h2 class="title">Add NewEvent</h2>
+    <button class="button button-icon ion-checkmark-round"
+            ng-click="confirm()"></button>
+  </ion-header-bar>
+  <ion-content>
+
+    <ion-list>
+      <ion-item class="item-divider"></ion-item>
+      <ion-item class="item-text-wrap item-icon-left">
+        <i class="icon ion-plus-round"></i>
+        <input type="text" placeholder="title" ng-model="event.title" required>
+      </ion-item>
+      <ion-item class="item-divider"></ion-item>
+      <ion-item>
+        start
+        <span class="item-note">
+          <input type="datetime-local" ng-model="event.fromWhichDay" placeholder="yyyy-MM-dd" required/>
+        </span>
+      </ion-item>
+      <ion-item>
+        end
+        <span class="item-note">
+          <input type="datetime-local" ng-model="event.toWhichDay" placeholder="yyyy-MM-dd"  required/>
+        </span>
+      </ion-item>
+      <ion-item>
+        <span class="input-label">Date</span>
+        <input type="text" placeholder="" ng-click="showDatePicker()">
+      </ion-item>
+      <ion-item class="item-text-wrap item-icon-left">
+        <i class="icon ion-compose"></i>
+        <input type="text" placeholder="description" ng-model="event.description" required>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
+
+
+
+
+
+
+

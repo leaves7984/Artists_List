@@ -1,0 +1,44 @@
+<ion-view view-title="Artists">
+  <ion-header-bar class="bar-dark">
+    <button class="button button-icon ion-minus-circled"
+            ng-click="data.ShowDeleted = !data.ShowDeleted; data.ShowReorder=false"></button>
+    <h2 class="title">Artist List</h2>
+    <button class="button button-icon ion-navicon"
+            ng-click="data.ShowReorder = !data.ShowReorder; data.ShowDeleted=false"></button>
+  </ion-header-bar>
+  <div class="bar bar-subheader item-input-inset bar-light">
+    <label class="item-input-wrapper">
+      <i class="icon ion-search placeholder-icon"></i>
+      <input type="search" ng-model ="query" placeholder="Search">
+    </label>
+  </div>
+  <ion-content class="has-subheader">
+    <!--refresh the page-->
+    <ion-refresher on-refresh="doRefresh()"></ion-refresher>
+    <!--show reorder and delete function-->
+    <ion-list show-reorder="data.ShowReorder" show-delete="data.ShowDeleted">
+      <!--filter: query| complete the search function-->
+      <ion-item ng-class="{'star': item.star}"
+                ng-repeat='item in artists | filter: query'
+                class="item-thumbnail-left item-icon-right item-text-wrap"
+                ng-click="jumpToUrl(item)">
+
+        <img ng-src="img/{{item.shortname}}_tn.jpg" alt="Photo">
+        <h2>{{item.name}}</h2>
+        <h3>{{item.reknown}}</h3>
+        <p>{{item.bio | limitTo: 100}}{{item.bio.length > 150 ? '&hellip;' : ''}}</p>
+
+        <button class="button button-clear icon ion-star button-assertive"
+                ng-click="toggleStar(item)" ng-show="item.star"></button>
+        <ion-option-button class="button-dark" ng-click="toggleStar(item)">
+          <i class="icon ion-star"></i></ion-option-button>
+
+        <ion-reorder-button class="ion-navicon"
+                            on-reorder="moveItem(item,$fromIndex,$toIndex)"></ion-reorder-button>
+        <ion-delete-button class="ion-minus-circled" ng-click="onItemDelete(item)"></ion-delete-button>
+      </ion-item>
+    </ion-list>
+
+  </ion-content>
+
+</ion-view>
