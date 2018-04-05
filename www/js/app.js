@@ -47,7 +47,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       views: {
         'auth-login': {
           templateUrl: 'templates/register.html',
-          controller: 'LoginController'
+          controller: 'RegisterController'
         },
         cache: false
       }
@@ -71,7 +71,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       },
       cache:false
     })
-    
+
     .state('tabs.calendar', {
       url: '/calendar',
       views: {
@@ -117,55 +117,56 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       cache:false
     });
 
-
-
-
   //by default go to tab/list page
   $urlRouterProvider.otherwise('/auth/login');
 })
 
-  .controller("LoginController",function ($scope, $http, $state) {
-    var API = "http://localhost:8989/api";
-    var LoginApi = API + "/login";
+  .controller("LoginController",function ($scope, $http, $state, Auth) {
+
     $scope.data = {
       username: "",
       password: ""
     };
     $scope.login = function(data) {
-
-      console.log(data);
-
-      $http({
-        method:"POST",
-        url: LoginApi,
-        params:{
-          "username":data.username,
-          "password":data.password
-        }
-      }).success(function(res) {
-        $scope.response = res;
-        console.log($scope.response);
-        if ($scope.response == true) {
-
-          console.log("success");
-
+      if(data.username === ""|| data.password === ""){
+        alert("please input username and password");
+      }
+      var result = Auth.login(data);
+      result.then(function (data) {
+        if(data === true){
           $state.go('tabs.summary');
-        } else {
-          console.log("try again");
+        }else{
+          alert("login failed");
         }
-      }).error(function() {
-        console.log("error");
+        console.log('then1:', data);
       });
+    };
+
+
+
+  })
+  .controller("RegisterController",function($scope,$state,Auth){
+    $scope.data = {
+      username: "",
+      password: "",
+      email:""
+    };
+    $scope.SignUp = function(){
+      if($scope.data.username === ""||$scope.data.password ===""|| $scope.data.email === ""){
+        alert("please fill all blanks");
+      }else{
+        Auth.register($scope.data);
+      }
 
     };
 
     $scope.goBack = function(){
       $state.go('auth.login');
     };
-
-
   })
-  .controller("AddEventController",function($scope, $http, $state,$cordovaDatePicker, $ionicPlatform){
+
+
+  .controller("AddEventController",function($scope, $http, $state,$cordovaDatePicker, $ionicPlatform, Auth){
 
     $scope.event = {
       fromWhichDay: new Date(2018,2,31,13,30,0),
@@ -173,7 +174,6 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       title: null,
       description: null
     };
-    console.log( $scope.event);
 
     $scope.goBack = function(){
       $state.go('tabs.summary');
@@ -200,79 +200,26 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
     });
 
     $scope.confirm = function(){
-      var API = "http://localhost:8989/api";
-      var CREATE_API = API + '/schedules/create';
 
         if($scope.event.title == null|| $scope.event.description == null){
-
+          alert("please fill all the blanks");
         }else{
-          var timeDiff = ($scope.event.toWhichDay - $scope.event.fromWhichDay)/60000;
-
-          $http.post(CREATE_API,{},{params:{
-              "username": "lili",
-              "date": $scope.event.fromWhichDay.toDateString(),
-              "time": timeDiff,
-              "sports": $scope.event.title,
-              "description": $scope.event.description
-
-            }}).success(function(data) {
-            console.log(data);
-          }).error(function(data) {
-            console.log(data);
-          });
-
-
+          Auth.addEvent($scope.event);
           $state.go('tabs.summary');
         }
 
       };
 
   })
+  
+  .controller("GraphController", function($scope, $state, Auth) {
 
 
-  .controller("GraphController", ['$scope','$http','$ionicPopup','$state',function($scope, $http, $ionicPopup, $state) {
-
-    var API = "http://localhost:8989/api";
-    var CALENDAR_API = API + '/users';
-    var CREATE_API = API + '/schedules/create';
-
-    $http.get(CALENDAR_API).success(function(data){
+    Auth.calendar().then(function (data) {
       var sportsArray = [];
       var timeArray = [];
-
-      $scope.calendar = data[1].calendar;
-
-      console.log($scope.calendar);
-
-      $scope.jumpToUrl = function(){
-        $state.go('tabs.addEvent');
-      };
-
-      $scope.doRefresh =function(){
-        sportsArray = [];
-        timeArray = [];
-        $http.get(CALENDAR_API).success(function(data){
-          $scope.calendar= data[1].calendar;
-          $scope.$broadcast('scroll.refreshComplete');
-          angular.forEach($scope.calendar, function(item){
-            console.log(item.schedule);
-
-            for (var i = 0; i < item.schedule.length; i++)
-            {
-              var index = sportsArray.indexOf(item.schedule[i].sports);
-              if(index >= 0){
-                timeArray[index] += item.schedule[i].time;
-              }else{
-                sportsArray.push(item.schedule[i].sports);
-                timeArray.push(item.schedule[i].time);
-              }
-
-            }
-          });
-          $scope.labels = sportsArray;
-          $scope.data = timeArray;
-        })
-      };
+      $scope.calendar = data.calendar;
+      console.log("calendar::"+$scope.calendar);
       $scope.toggleStar = function(item){
         item.star = !item.star;
       };
@@ -283,6 +230,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
         timeArray[index] -= item.time;
 
       };
+
       angular.forEach($scope.calendar, function(item){
         console.log(item.schedule);
 
@@ -302,9 +250,41 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       console.log(timeArray);
       $scope.labels = sportsArray;
       $scope.data = timeArray;
-
     });
-  }])
+
+
+      $scope.jumpToUrl = function(){
+        $state.go('tabs.addEvent');
+      };
+
+      $scope.doRefresh =function(){
+        var sportsArray = [];
+        var timeArray = [];
+        Auth.calendar().then(function (data) {
+          $scope.calendar = data.calendar;
+          $scope.$broadcast('scroll.refreshComplete');
+          angular.forEach($scope.calendar, function(item){
+            console.log(item.schedule);
+
+            for (var i = 0; i < item.schedule.length; i++)
+            {
+              var index = sportsArray.indexOf(item.schedule[i].sports);
+              if(index >= 0){
+                timeArray[index] += item.schedule[i].time;
+              }else{
+                sportsArray.push(item.schedule[i].sports);
+                timeArray.push(item.schedule[i].time);
+              }
+
+            }
+            $scope.labels = sportsArray;
+            $scope.data = timeArray;
+          });
+        });
+      };
+
+    })
+
 
   .controller('CalendarController',['$scope','$http','$state',function($scope, $http, $state){
     $http.get('js/data.json').success(function(data){
