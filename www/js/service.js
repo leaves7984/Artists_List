@@ -1,6 +1,6 @@
 angular.module('starter')
 
-  .service('Auth',function($q,$http,API_ENDPOINT){
+  .service('Auth',function($q,$http,API_ENDPOINT,$filter){
     var LOCAL_TOKEN_KEY = 'username';
     var isAuthenticated = false;
     var authToken;
@@ -79,14 +79,17 @@ angular.module('starter')
     var addEvent = function(event){
       return $q(function(resolve,reject){
         var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
-        var timeDiff = (event.toWhichDay - event.fromWhichDay)/60000;
+        var timeDiff = (event.toWhichDay - event.fromWhichDay)/3600000;
+        var diff = Math.round(timeDiff*10)/10;
         $http({
           method:"POST",
           url: API_ENDPOINT.url+"/schedules/create",
           params:{
             "username": username,
-            "date": event.fromWhichDay.toDateString(),
-            "time": timeDiff,
+            "date": $filter('date')(event.fromWhichDay,'yyyy-MM-dd'),
+            "from": $filter('date')(event.fromWhichDay,'h:mm'),
+            "to": $filter('date')(event.toWhichDay,'h:mm'),
+            "time": diff,
             "sports": event.title,
             "description": event.description
           }
@@ -101,6 +104,30 @@ angular.module('starter')
         })
       })
 
+    };
+    var deleteSchedule = function(calendarId,scheduleId){
+      return $q(function(resolve,reject){
+        var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+        $http({
+          method:"POST",
+          url: API_ENDPOINT.url+"/schedules/delete",
+          params:{
+            "username": username,
+            "calendarId": calendarId,
+             "scheduleId": scheduleId
+          }
+        }).then(function(result){
+          if(result){
+            console.log("success");
+            console.log(result);
+            resolve(result.data);
+          }else{
+            console.log("try again");
+            console.log(result);
+            reject(result.data);
+          }
+        })
+      })
     };
     var register = function(data){
       return $q(function(resolve,reject){
@@ -138,6 +165,7 @@ angular.module('starter')
       register: register,
       calendar: calendar,
       addEvent: addEvent,
+      deleteSchedule: deleteSchedule,
       isAuthenticated: function () {
         return isAuthenticated;
       }

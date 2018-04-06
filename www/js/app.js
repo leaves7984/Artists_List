@@ -3,9 +3,9 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
+angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform,$ionicSideMenuDelegate) {
   $ionicPlatform.ready(function() {
     if(window.cordova && window.cordova.plugins.Keyboard) {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -53,15 +53,25 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       }
     })
   // setup an abstract state for the tabs directive
-    .state('tabs', {
-      url: '/tab',
+
+    .state('app', {
+      url: "/app",
       abstract: true,
-      templateUrl: 'templates/tabs.html'
+      templateUrl: "templates/main.html"
+    })
+    .state('app.tabs', {
+      url: "/tabs",
+      views: {
+        'menuContent': {
+          templateUrl: 'templates/tabs.html',
+          controller: 'tabsController'
+        }
+      }
     })
 
     // Each tab has its own nav history stack:
 
-    .state('tabs.list', {
+    .state('app.tabs.list', {
       url: '/list',
       views: {
         'tab-list': {
@@ -72,7 +82,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       cache:false
     })
 
-    .state('tabs.calendar', {
+    .state('app.tabs.calendar', {
       url: '/calendar',
       views: {
         'tab-calendar' : {
@@ -85,7 +95,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
 
 
 
-    .state('tabs.summary', {
+    .state('app.tabs.summary', {
       url: '/summary',
       views: {
         'tab-summary' : {
@@ -95,7 +105,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       }
     })
 
-    .state('tabs.detail', {
+    .state('app.tabs.detail', {
       url: '/list/detail/:aid',
       views: {
         'tab-list' : {
@@ -106,7 +116,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       cache:false
     })
 
-    .state('tabs.addEvent', {
+    .state('app.tabs.addEvent', {
       url: '/summary/addEvent',
       views: {
         'tab-summary' : {
@@ -120,6 +130,13 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
   //by default go to tab/list page
   $urlRouterProvider.otherwise('/auth/login');
 })
+  .controller('tabsController', function($scope, $ionicSideMenuDelegate) {
+
+    $scope.showRightMenu = function() {
+      $ionicSideMenuDelegate.toggleRight();
+    };
+
+  })
 
   .controller("LoginController",function ($scope, $http, $state, Auth) {
 
@@ -134,7 +151,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       var result = Auth.login(data);
       result.then(function (data) {
         if(data === true){
-          $state.go('tabs.summary');
+          $state.go('app.tabs.summary');
         }else{
           alert("login failed");
         }
@@ -156,6 +173,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
         alert("please fill all blanks");
       }else{
         Auth.register($scope.data);
+        $state.go('auth.login');
       }
 
     };
@@ -166,38 +184,18 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
   })
 
 
-  .controller("AddEventController",function($scope, $http, $state,$cordovaDatePicker, $ionicPlatform, Auth){
+  .controller("AddEventController",function($scope, $http, $state, Auth){
 
     $scope.event = {
-      fromWhichDay: new Date(2018,2,31,13,30,0),
-      toWhichDay: new Date(2018,2,31,14,30),
+      fromWhichDay: new Date(),
+      toWhichDay: new Date(),
       title: null,
       description: null
     };
 
     $scope.goBack = function(){
-      $state.go('tabs.summary');
+      $state.go('app.tabs.summary');
     };
-
-    $ionicPlatform.ready(function(){
-      $scope.showDatePicker = function(){
-        var options = {
-          date: new Date(),
-          mode: 'date', // or 'time'
-          minDate: new Date() - 10000,
-          allowOldDates: true,
-          allowFutureDates: false,
-          doneButtonLabel: 'DONE',
-          doneButtonColor: '#F2F3F4',
-          cancelButtonLabel: 'CANCEL',
-          cancelButtonColor: '#000000'
-        };
-        $cordovaDatePicker.show(options).then(function (value) {
-          alert(value);
-        });
-
-      };
-    });
 
     $scope.confirm = function(){
 
@@ -205,13 +203,13 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
           alert("please fill all the blanks");
         }else{
           Auth.addEvent($scope.event);
-          $state.go('tabs.summary');
+          $state.go('app.tabs.summary');
         }
 
       };
 
   })
-  
+
   .controller("GraphController", function($scope, $state, Auth) {
 
 
@@ -219,31 +217,49 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
       var sportsArray = [];
       var timeArray = [];
       $scope.calendar = data.calendar;
-      console.log("calendar::"+$scope.calendar);
       $scope.toggleStar = function(item){
         item.star = !item.star;
       };
-      $scope.onItemDelete = function(dayIndex, item){
-        $scope.calendar[dayIndex].schedule.splice($scope.calendar[dayIndex].schedule.indexOf(item),1);
 
-        var index = sportsArray.indexOf(item.sports);
-        timeArray[index] -= item.time;
+      $scope.onItemDelete = function(day, item){
+        var time = new Date(day.date);
+        var now = new Date();
+        var timediff = (now - time) / (1000 * 60 * 60 * 24);
+        dayIndex = $scope.calendar.indexOf(day);
+        $scope.calendar[dayIndex].schedule.splice($scope.calendar[dayIndex].schedule.indexOf(item),1);
+        if(timediff < 8 && timediff >=0){
+          var index = sportsArray.indexOf(item.sports);
+          timeArray[index] -= item.time;
+        }
+
+
+      };
+      $scope.onDelete = function (day, item) {
+        console.log(day);
+        console.log(item);
+        Auth.deleteSchedule(day.id,item.id);
 
       };
 
       angular.forEach($scope.calendar, function(item){
-        console.log(item.schedule);
 
-        for (var i = 0; i < item.schedule.length; i++)
-        {
-          var index = sportsArray.indexOf(item.schedule[i].sports);
-          if(index >= 0){
-            timeArray[index] += item.schedule[i].time;
-          }else{
-            sportsArray.push(item.schedule[i].sports);
-            timeArray.push(item.schedule[i].time);
+        console.log("schedule::"+item.date);
+        var time = new Date(item.date);
+        var now = new Date();
+        var timediff = (now - time) / (1000 * 60 * 60 * 24);
+
+        if(timediff < 8 && timediff >=0){
+          for (var i = 0; i < item.schedule.length; i++)
+          {
+            var index = sportsArray.indexOf(item.schedule[i].sports);
+            if(index >= 0){
+              timeArray[index] += item.schedule[i].time;
+            }else{
+              sportsArray.push(item.schedule[i].sports);
+              timeArray.push(item.schedule[i].time);
+            }
+
           }
-
         }
       });
       console.log(sportsArray);
@@ -254,7 +270,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
 
 
       $scope.jumpToUrl = function(){
-        $state.go('tabs.addEvent');
+        $state.go('app.tabs.addEvent');
       };
 
       $scope.doRefresh =function(){
@@ -264,18 +280,22 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
           $scope.calendar = data.calendar;
           $scope.$broadcast('scroll.refreshComplete');
           angular.forEach($scope.calendar, function(item){
-            console.log(item.schedule);
+            var time = new Date(item.date);
+            var now = new Date();
+            var timediff = (now - time) / (1000 * 60 * 60 * 24);
 
-            for (var i = 0; i < item.schedule.length; i++)
-            {
-              var index = sportsArray.indexOf(item.schedule[i].sports);
-              if(index >= 0){
-                timeArray[index] += item.schedule[i].time;
-              }else{
-                sportsArray.push(item.schedule[i].sports);
-                timeArray.push(item.schedule[i].time);
+            if(timediff < 8 && timediff >=0) {
+
+              for (var i = 0; i < item.schedule.length; i++) {
+                var index = sportsArray.indexOf(item.schedule[i].sports);
+                if (index >= 0) {
+                  timeArray[index] += item.schedule[i].time;
+                } else {
+                  sportsArray.push(item.schedule[i].sports);
+                  timeArray.push(item.schedule[i].time);
+                }
+
               }
-
             }
             $scope.labels = sportsArray;
             $scope.data = timeArray;
@@ -286,7 +306,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
     })
 
 
-  .controller('CalendarController',['$scope','$http','$state',function($scope, $http, $state){
+  .controller('CalendarController',['$scope','$http','$state',function($scope, $http){
     $http.get('js/data.json').success(function(data){
       $scope.calendar = data.calendar;
 
@@ -300,6 +320,7 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
         item.star = !item.star;
       };
       $scope.onItemDelete = function(dayIndex, item){
+
         $scope.calendar[dayIndex].schedule.splice($scope.calendar[dayIndex].schedule.indexOf(item),1);
       };
 
@@ -313,12 +334,12 @@ angular.module('starter', ['ionic','chart.js','ui.router','ngCordova'])
     $scope.data = { showDelete: false, showReorder: false };
     $scope.jumpToUrl = function(item){
       console.log(item);
-      $state.go('tabs.detail',{aid:item.shortname});
+      $state.go('app.tabs.detail',{aid:item.shortname});
       console.log("#/tab/list/"+item.shortname);
       $rootScope.detail = item;
     };
     $scope.goBack = function(){
-      $state.go('tabs.list');
+      $state.go('app.tabs.list');
     };
     $scope.doRefresh =function(){
       $http.get('js/data.json').success(function(data){

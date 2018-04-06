@@ -9,7 +9,7 @@
     </label>
   </div>
   <ion-content class="has-subheader">
-    <ion-refresher on-refresh="doRefresh()"></ion-refresher>
+    <ion-refresher on-srefresh="doRefresh()"></ion-refresher>
     <div class="day" ng-repeat="(dayIndex, day) in calendar">
       <!--item divider-->
       <div class="item item-divider item-divider-calm">
@@ -23,8 +23,7 @@
       <ion-list>
         <ion-item ng-class="{'item-avatar':item.shortname,'star': item.star}"
                   class="item-text-wrap item-icon-right"
-                  ng-repeat="item in day.schedule|filter: query"
-                  href="#">
+                  ng-repeat="item in day.schedule|filter: query">
           <img ng-show="item.shortname"
                ng-src="img/{{item.shortname}}_tn.jpg"
                alt="{{item.name}} Photo">

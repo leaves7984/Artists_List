@@ -18,19 +18,15 @@
       <ion-item class="item-divider"></ion-item>
       <ion-item>
         start
-        <span class="item-note">
-          <input type="datetime-local" ng-model="event.fromWhichDay" placeholder="yyyy-MM-dd" required/>
+        <span class="item-note" ion-datetime-picker ng-model="event.fromWhichDay">
+            {{event.fromWhichDay| date: "yyyy-MM-dd h:mm a"}}
         </span>
       </ion-item>
       <ion-item>
         end
-        <span class="item-note">
-          <input type="datetime-local" ng-model="event.toWhichDay" placeholder="yyyy-MM-dd"  required/>
+        <span class="item-note" ion-datetime-picker ng-model="event.toWhichDay">
+          {{event.toWhichDay| date: "yyyy-MM-dd h:mm a"}}
         </span>
-      </ion-item>
-      <ion-item>
-        <span class="input-label">Date</span>
-        <input type="text" placeholder="" ng-click="showDatePicker()">
       </ion-item>
       <ion-item class="item-text-wrap item-icon-left">
         <i class="icon ion-compose"></i>

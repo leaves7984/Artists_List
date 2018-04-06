@@ -15,24 +15,33 @@
   </div>
   <ion-content class="has-subheader">
     <ion-refresher on-refresh="doRefresh()"></ion-refresher>
-    <h1>Simple Line chart for Ionic</h1>
+    <ion-item class="item-divider item-divider-calm">
+      <h2>Last week</h2>
+    </ion-item>
     <canvas id="pie" class="chart chart-pie"
             chart-data="data" chart-labels="labels" chart-options="options">
     </canvas>
 
-    <div ng-repeat="(dayIndex, day) in calendar">
-      <h2>{{day.date| date:'yyyy-MM-dd HH:mm:ss'}}</h2>
+    <div ng-repeat=" day in calendar|  orderBy:'-date'">
+      <ion-item class="item-divider item-divider-calm dayhighlight">
+        <h2>{{day.date}}</h2>
+      </ion-item>
       <ion-list class="item-icon-right item-text-wrap" show-delete="data.ShowDeleted">
-        <ion-item ng-class="{'star': item.star}" ng-repeat='item in day.schedule|filter: query'>
-
-          <h2>{{item.time}}min</h2>
+        <ion-item ng-class="{'star': item.star}"
+                  ng-repeat="item in day.schedule|filter: query|orderBy: 'fromWhichDay'">
+          <h2>{{item.time}}h</h2>
+          <span class="item-note"><h2>{{item.fromWhichDay}}-{{item.toWhichDay}}</h2></span>
           <h3>{{item.sports}}</h3>
-          {{item.description}}
+          <p>{{item.description}}</p>
+
           <button class="button button-clear icon ion-star button-assertive"
                   ng-click="toggleStar(item)" ng-show="item.star"></button>
           <ion-option-button class="button-dark" ng-click="toggleStar(item)">
             <i class="icon ion-star"></i></ion-option-button>
-          <ion-delete-button class="ion-minus-circled" ng-click="onItemDelete(dayIndex,item)"></ion-delete-button>
+          <ion-option-button class="button-assertive" ng-click="onDelete(day,item)">
+            <i class="icon ion-trash-a"></i>
+          </ion-option-button>
+          <ion-delete-button class="ion-minus-circled" ng-click="onItemDelete(day,item)"></ion-delete-button>
         </ion-item>
       </ion-list>
     </div>

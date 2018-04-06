@@ -56,8 +56,12 @@ body {
   font-weight: 200;
 }
 
-.home-btn {
-  padding-left:10px;
-  padding-right:10px;
-  transform: scale(1);
+/*.home-btn {*/
+  /*padding-left:10px;*/
+  /*padding-right:10px;*/
+  /*transform: scale(1);*/
+/*}*/
+canvas{
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
