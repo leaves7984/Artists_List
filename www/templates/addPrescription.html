@@ -1,0 +1,89 @@
+<ion-view title="AddNewEvent">
+  <ion-header-bar class="bar-dark" align-title="center">
+    <button class="button button-icon ion-chevron-left"
+            ng-click="goBackToDoctor()"></button>
+    <h2 class="title">Add Prescription</h2>
+    <!--<button class="button button-icon ion-checkmark-round"-->
+            <!--ng-click="confirm()"></button>-->
+  </ion-header-bar>
+  <ion-content>
+
+    <ion-list ng-switch="event.type">
+      <ion-item class="item-divider"></ion-item>
+      <ion-item class="item-text-wrap item-icon-left">
+        <i class="icon ion-plus-round"></i>
+        <input type="text" placeholder="title" ng-model="event.title" required>
+      </ion-item>
+      <!--<ion-item>-->
+        <label class="item item-input item-select">
+          <div class="input-label">
+            Doctor
+          </div>
+          <select ng-selected="event.patient">
+            <option ng-repeat="doctor in doctors">{{doctor.name}}</option>
+          </select>
+        </label>
+      <!--</ion-item>-->
+      <ion-item class="item-divider"></ion-item>
+      <br>
+      <div class="button-bar">
+        <a class="button button-balanced" ng-click="setType('DAILY')">Daily</a>
+        <a class="button button-energized" ng-click="setType('WEEKLY')">Weekly</a>
+      </div>
+
+      <br>
+      <ion-item ng-switch-when="WEEKLY">
+        <div class="row" >
+          <div class="col-33">Every</div>
+          <select class="col-33" ng-selected="event.weekTimes">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+          </select>
+          <div class="col-33 text-right">Week(s)</div>
+        </div>
+      </ion-item>
+      <ion-item ng-switch-when="WEEKLY">
+        <ion-label>
+          On
+        </ion-label>
+        <div class="row btn-cl">
+          <div class="col button">Mo</div>
+          <div class="col button">Tu</div>
+          <div class="col button">We</div>
+          <div class="col button">Th</div>
+          <div class="col button">Sa</div>
+          <div class="col button">Su</div>
+        </div>
+      </ion-item>
+      <ion-item>
+        start
+        <span class="item-note" ion-datetime-picker ng-model="event.fromWhichDay">
+            {{event.fromWhichDay| date: "yyyy-MM-dd h:mm a"}}
+        </span>
+      </ion-item>
+      <ion-item>
+        end
+        <span class="item-note" ion-datetime-picker ng-model="event.toWhichDay">
+          {{event.toWhichDay| date: "yyyy-MM-dd h:mm a"}}
+        </span>
+      </ion-item>
+      <ion-item class="item-text-wrap item-icon-left">
+        <i class="icon ion-compose"></i>
+        <input type="text" placeholder="description" ng-model="event.description" required>
+      </ion-item>
+    </ion-list>
+    <button class="button button-full button-balanced" ng-click="confirm()">
+      <div class="title" >SAVE</div>
+    </button>
+  </ion-content>
+</ion-view>
+
+
+
+
+
+
+

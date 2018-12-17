@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker'])
+angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker','ion-floating-menu'])
 
 .run(function($ionicPlatform,$ionicSideMenuDelegate) {
   $ionicPlatform.ready(function() {
@@ -23,8 +23,21 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
   });
 })
 
+  .config(function($ionicConfigProvider) {
+    $ionicConfigProvider.tabs.position('bottom');
+  })
+
+
 .config(function($stateProvider,$urlRouterProvider){
+
   $stateProvider
+    .state('editProfile',{
+      url:'/edit',
+      templateUrl: 'templates/editProfile.html',
+      controller: 'EditProfileController'
+
+    })
+
 
     .state('auth',{
       url: '/auth',
@@ -57,7 +70,8 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
     .state('app', {
       url: "/app",
       abstract: true,
-      templateUrl: "templates/main.html"
+      templateUrl: 'templates/sidemenu.html',
+      controller: 'sideBarController'
     })
     .state('app.tabs', {
       url: "/tabs",
@@ -80,6 +94,28 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
         }
       },
       cache:false
+    })
+
+    .state('app.tabs.addPatient', {
+      url: '/list/addPatient',
+      views: {
+        'tab-list': {
+          templateUrl: 'templates/addPatient.html',
+          controller: 'AddPatientController'
+        }
+      },
+      cache: false
+    })
+
+    .state('app.tabs.addPrescription', {
+      url: '/list/addPrescription',
+      views: {
+        'tab-list': {
+          templateUrl: 'templates/addPrescription.html',
+          controller: 'AddPrescriptionController'
+        }
+      },
+      cache: false
     })
 
     .state('app.tabs.calendar', {
@@ -138,6 +174,16 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
 
   })
 
+  .controller('sideBarController',function ($scope,$state,Auth) {
+
+    $scope.LogOut = function () {
+      Auth.logout();
+      $state.go('auth.login');
+    };
+    $scope.username = Auth.getUser();
+
+  })
+
   .controller("LoginController",function ($scope, $http, $state, Auth) {
 
     $scope.data = {
@@ -150,29 +196,52 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
       }
       var result = Auth.login(data);
       result.then(function (data) {
-        if(data === true){
-          $state.go('app.tabs.summary');
-        }else{
-          alert("login failed");
-        }
-        console.log('then1:', data);
+        console.log(data);
+        $state.go('app.tabs.summary');
+
+      }).catch(function (reason){
+        $scope.message = true;
+        $scope.data.password = null;
       });
     };
+    $scope.clearInput = function() {
+      $scope.message = false;
+    }
 
 
 
   })
+
+  .controller("EditProfileController",function($scope,$state,Auth){
+    $scope.goBack = function(){
+      $state.go('app.tabs.summary');
+    };
+    Auth.getUserInfo().then(function(data){
+      $scope.currentUser = data;
+    });
+    console.log($scope.currentUser);
+
+  })
+
   .controller("RegisterController",function($scope,$state,Auth){
     $scope.data = {
       username: "",
       password: "",
       email:""
     };
+    $scope.userRegex = '[a-zA-Z]{8,}';
+    $scope.passRegex = '[a-zA-Z]{5,}';
+
     $scope.SignUp = function(){
       if($scope.data.username === ""||$scope.data.password ===""|| $scope.data.email === ""){
         alert("please fill all blanks");
-      }else{
-        Auth.register($scope.data);
+      } else{
+        var result = Auth.register($scope.data);
+        result.then(function(data){
+          alert("register succeed!")
+        }).catch(function(data){
+          alert("register failure");
+        });
         $state.go('auth.login');
       }
 
@@ -184,17 +253,27 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
   })
 
 
-  .controller("AddEventController",function($scope, $http, $state, Auth){
+  .controller("AddEventController",function($scope, $http, $state, Auth, MESSAGE_NOTICE, $rootScope, $timeout,$ionicLoading){
 
     $scope.event = {
       fromWhichDay: new Date(),
       toWhichDay: new Date(),
       title: null,
-      description: null
+      description: null,
+      type: 'DAILY',
+      weekTimes: 1
     };
+    $scope.event.toWhichDay.setHours($scope.event.toWhichDay.getHours() + 1);
+
+    $scope.setType = function(data) {
+      $scope.event.type = data;
+    }
 
     $scope.goBack = function(){
       $state.go('app.tabs.summary');
+    };
+    $scope.goBackToDoctor = function(){
+      $state.go('app.tabs.list');
     };
 
     $scope.confirm = function(){
@@ -203,82 +282,182 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
           alert("please fill all the blanks");
         }else{
           Auth.addEvent($scope.event);
-          $state.go('app.tabs.summary');
+          $rootScope.$emit(MESSAGE_NOTICE.ADD_NEW_EVENT);
+          $ionicLoading.show({
+            content: '<i class="ion-loading-c"></i> ',
+            animation: 'fade-in',
+            noBackdrop: false,
+            maxWidth: 200,
+            showDelay: 500
+          });
+          $timeout(function () {
+            $ionicLoading.hide();
+            $state.go('app.tabs.summary');
+          }, 2000);
         }
 
       };
 
   })
 
-  .controller("GraphController", function($scope, $state, Auth) {
+  .controller("AddPrescriptionController", function ($scope, $http, $state, Auth, MESSAGE_NOTICE, $rootScope, $timeout, $ionicLoading) {
 
+    Auth.getPatient().then(function (data) {
+      $scope.doctors = data;
+    });
+    $scope.event = {
+      fromWhichDay: new Date(),
+      toWhichDay: new Date(),
+      title: null,
+      description: null,
+      type: 'DAILY',
+      weekTimes: 1,
+      patient: null,
+    };
+
+
+
+    $scope.event.toWhichDay.setHours($scope.event.toWhichDay.getHours() + 1);
+
+    $scope.setType = function (data) {
+      $scope.event.type = data;
+    }
+
+    $scope.goBackToDoctor = function () {
+      $state.go('app.tabs.list');
+    };
+
+    $scope.confirm = function () {
+      console.log($scope.event)
+      if ($scope.event.title == null || $scope.event.description == null) {
+        alert("please fill all the blanks");
+      } else {
+        Auth.addPrescription($scope.event);
+        $rootScope.$emit(MESSAGE_NOTICE.ADD_NEW_EVENT);
+        $ionicLoading.show({
+          content: '<i class="ion-loading-c"></i> ',
+          animation: 'fade-in',
+          noBackdrop: false,
+          maxWidth: 200,
+          showDelay: 500
+        });
+        $timeout(function () {
+          $ionicLoading.hide();
+          $state.go('app.tabs.list');
+        }, 2000);
+      }
+
+    };
+
+  })
+  .controller("AddPatientController", function ($scope, $http, $state, Auth) {
+
+    $scope.event = {
+      name: null,
+      sex: null,
+      phone: null,
+      email: null,
+      address: null,
+      description: null
+    };
+
+    $scope.goBack = function () {
+      $state.go('app.tabs.list');
+    };
+
+    $scope.confirm = function () {
+
+      if ($scope.event.name == null || $scope.event.description == null) {
+        alert("please fill all the blanks");
+      } else {
+        Auth.addPatient($scope.event);
+        $state.go('app.tabs.list');
+      }
+
+    };
+
+  })
+
+  .controller("GraphController", function($scope, $state, Auth, MESSAGE_NOTICE, $rootScope) {
+    var sportsArray = [];
+    var timeArray = [];
+    var last7days = [];
+    $rootScope.$on(MESSAGE_NOTICE.ADD_NEW_EVENT, function (event) {
+      console.log("load new event");
+      $scope.doRefresh();
+     });
 
     Auth.calendar().then(function (data) {
-      var sportsArray = [];
-      var timeArray = [];
       $scope.calendar = data.calendar;
-      $scope.toggleStar = function(item){
-        item.star = !item.star;
-      };
+      angular.forEach($scope.calendar, function (item) {
 
-      $scope.onItemDelete = function(day, item){
-        var time = new Date(day.date);
-        var now = new Date();
-        var timediff = (now - time) / (1000 * 60 * 60 * 24);
-        dayIndex = $scope.calendar.indexOf(day);
-        $scope.calendar[dayIndex].schedule.splice($scope.calendar[dayIndex].schedule.indexOf(item),1);
-        if(timediff < 8 && timediff >=0){
-          var index = sportsArray.indexOf(item.sports);
-          timeArray[index] -= item.time;
-        }
-
-
-      };
-      $scope.onDelete = function (day, item) {
-        console.log(day);
-        console.log(item);
-        Auth.deleteSchedule(day.id,item.id);
-
-      };
-
-      angular.forEach($scope.calendar, function(item){
-
-        console.log("schedule::"+item.date);
+        console.log("schedule::" + item.date);
         var time = new Date(item.date);
         var now = new Date();
         var timediff = (now - time) / (1000 * 60 * 60 * 24);
 
-        if(timediff < 8 && timediff >=0){
-          for (var i = 0; i < item.schedule.length; i++)
-          {
+        if (timediff < 8 && timediff >= 0) {
+          for (var i = 0; i < item.schedule.length; i++) {
             var index = sportsArray.indexOf(item.schedule[i].sports);
-            if(index >= 0){
+            if (index >= 0) {
               timeArray[index] += item.schedule[i].time;
-            }else{
+            } else {
               sportsArray.push(item.schedule[i].sports);
               timeArray.push(item.schedule[i].time);
+
             }
 
           }
+          last7days.push(item);
+
         }
       });
-      console.log(sportsArray);
-      console.log(timeArray);
+      $scope.last7days = last7days;
       $scope.labels = sportsArray;
       $scope.data = timeArray;
+
     });
+    $scope.toggleStar = function (item) {
+      item.star = !item.star;
+    };
+
+    $scope.onItemDelete = function (day, item) {
+      var time = new Date(day.date);
+      var now = new Date();
+      var timediff = (now - time) / (1000 * 60 * 60 * 24);
+      dayIndex = $scope.last7days.indexOf(day);
+      $scope.last7days[dayIndex].schedule.splice($scope.last7days[dayIndex].schedule.indexOf(item), 1);
+      if (timediff < 8 && timediff >= 0) {
+        var index = sportsArray.indexOf(item.sports);
+        timeArray[index] -= item.time;
+      }
 
 
-      $scope.jumpToUrl = function(){
+    };
+    $scope.onDelete = function (day, item) {
+      console.log(day);
+      console.log(item);
+      Auth.deleteSchedule(day.id, item.id);
+      dayIndex = $scope.last7days.indexOf(day);
+      $scope.last7days[dayIndex].schedule.splice($scope.last7days[dayIndex].schedule.indexOf(item), 1);
+      $scope.doRefresh();
+
+    };
+
+
+
+
+      $scope.jumpToUrl = function(data){
         $state.go('app.tabs.addEvent');
       };
 
       $scope.doRefresh =function(){
-        var sportsArray = [];
-        var timeArray = [];
+        sportsArray = [];
+        timeArray = [];
+        last7days = [];
+        console.log("do refresh")
         Auth.calendar().then(function (data) {
           $scope.calendar = data.calendar;
-          $scope.$broadcast('scroll.refreshComplete');
           angular.forEach($scope.calendar, function(item){
             var time = new Date(item.date);
             var now = new Date();
@@ -296,10 +475,15 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
                 }
 
               }
+              last7days.push(item);
             }
-            $scope.labels = sportsArray;
-            $scope.data = timeArray;
+
           });
+          $scope.labels = sportsArray;
+          $scope.data = timeArray;
+          $scope.last7days = last7days;
+          console.log($scope.last7days)
+          $scope.$broadcast('scroll.refreshComplete');
         });
       };
 
@@ -328,22 +512,23 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
     });
   }])
 
-.controller('ListController',['$scope','$http','$state','$rootScope',function($scope, $http, $state,$rootScope){
-  $http.get('js/data.json').success(function(data){
-    $scope.artists = data.artists;
-    $scope.data = { showDelete: false, showReorder: false };
+.controller('ListController',['$scope','$http','$state','$rootScope','Auth',
+function($scope, $http, $state,$rootScope, Auth){
+  Auth.getPatient().then(function (data) {
+    $scope.data = data;
+    $scope.manage = { showDelete: false, showReorder: false };
     $scope.jumpToUrl = function(item){
       console.log(item);
-      $state.go('app.tabs.detail',{aid:item.shortname});
-      console.log("#/tab/list/"+item.shortname);
+      $state.go('app.tabs.detail',{aid:item.id});
+      console.log("#/tab/list/"+item.id);
       $rootScope.detail = item;
     };
     $scope.goBack = function(){
       $state.go('app.tabs.list');
     };
     $scope.doRefresh =function(){
-      $http.get('js/data.json').success(function(data){
-        $scope.artists = data.artists;
+      Auth.getPatient().then(function(data){
+        $scope.data = data;
         $scope.$broadcast('scroll.refreshComplete');
       })
     };
@@ -351,13 +536,30 @@ angular.module('starter', ['ionic','chart.js','ui.router','ion-datetime-picker']
       item.star = !item.star;
     };
     $scope.onItemDelete = function(item){
-      $scope.artists.splice($scope.artists.indexOf(item),1);
+      $scope.data.splice($scope.data.indexOf(item),1);
     };
     $scope.moveItem = function(item, fromIndex, toIndex){
-      $scope.artists.splice(fromIndex,1);
-      $scope.artists.splice(toIndex,0,item);
+      $scope.data.splice(fromIndex,1);
+      $scope.data.splice(toIndex,0,item);
     };
-    console.log(data);
+    $scope.addPatient = function() {
+      $state.go('app.tabs.addPatient');
+    };
+    $scope.addPrescription = function () {
+      $state.go('app.tabs.addPrescription');
+    };
+    $scope.jumpToUrl = function (item) {
+      console.log(item);
+      $state.go('app.tabs.detail', {aid: item.id});
+      console.log("#/tab/list/" + item.id);
+      $rootScope.detail = item;
+      console.log($rootScope.detail)
+    };
+
+    $scope.onDelete = function (item) {
+      Auth.deleteDoctor(item.id);
+      $scope.data.splice($scope.data.indexOf(item), 1);
+    };
   });
 
 }]);

@@ -1,5 +1,5 @@
 {
-  "name": "myBlank",
+  "name": "todo",
   "version": "0.0.1",
   "description": "An Ionic project",
   "devDependencies": {
@@ -9,8 +9,32 @@
     "gulp-sass": "^3.1.0"
   },
   "dependencies": {
+    "@ionic-native/core": "^4.6.0",
+    "@ionic-native/http": "^4.6.0",
     "angular-chart.js": "^1.1.1",
     "chart.js": "^2.7.2",
-    "ion-datetime-picker": "^0.5.2"
+    "cordova-android": "7.0.0",
+    "cordova-plugin-advanced-http": "^1.11.1",
+    "cordova-plugin-device": "^2.0.1",
+    "cordova-plugin-file": "^6.0.1",
+    "cordova-plugin-ionic-keyboard": "^2.0.5",
+    "cordova-plugin-ionic-webview": "^1.1.19",
+    "cordova-plugin-splashscreen": "^5.0.2",
+    "cordova-plugin-whitelist": "git+https://github.com/apache/cordova-plugin-whitelist.git",
+    "ion-datetime-picker": "^0.5.2",
+    "replace": "^1.0.0"
+  },
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-ionic-webview": {},
+      "cordova-plugin-ionic-keyboard": {},
+      "cordova-plugin-advanced-http": {}
+    },
+    "platforms": [
+      "android"
+    ]
   }
 }

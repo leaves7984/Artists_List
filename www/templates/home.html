@@ -1,16 +1,17 @@
 <ion-view title="Login">
-  <ion-header-bar class="bar-dark">
+  <ion-header-bar class="bar-dark" align-title="center">
     <h2 class="title">Login</h2>
   </ion-header-bar>
   <ion-content class="has-subheader padding">
     <form>
+      <p ng-if="message">You input the wrong username or password</p>
       <div class="card">
         <ion-item class="item-input">
           <span class="input-label">Username</span>
-          <input type="text" ng-model="data.username" placeholder="Username">
+          <input type="text" ng-model="data.username" ng-click= "clearInput()" placeholder="Username">
         </ion-item>
         <ion-item class="item-input">
-          <span class="input-label" >Password</span>
+          <span class="input-label" ng-click="clearInput()">Password</span>
           <input type="password" ng-model="data.password" placeholder="Password">
         </ion-item>
       </div>

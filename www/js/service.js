@@ -28,8 +28,10 @@ angular.module('starter')
     function destroyUserCredentials(){
       authToken = undefined;
       isAuthenticated =false;
-      $http.defaults.headers.common.Authorization = undefined;
+      // $http.defaults.headers.common.Authorization = undefined;
       window.localStorage.removeItem(LOCAL_TOKEN_KEY);
+      var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+      console.log(username);
     }
 
     var login = function(user){
@@ -44,14 +46,10 @@ angular.module('starter')
                 "password":user.password
               }
             }).then(function(result){
-          if(result.data){
             storeUserCredentials(user.username);
-            console.log("success");
             resolve(result.data);
-          }else{
-            console.log("try again");
-            reject(result.data);
-          }
+        }).catch(function (reason) {
+          reject(reason);
         })
       })
     };
@@ -60,10 +58,7 @@ angular.module('starter')
         var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
         $http({
           method:"GET",
-          url: API_ENDPOINT.url+"/users",
-          params:{
-            "username": username
-          }
+          url: API_ENDPOINT.url+"/user/" + username,
         }).then(function(result){
           if(result.data){
             console.log("success");
@@ -95,21 +90,100 @@ angular.module('starter')
           }
         }).then(function(result){
           if(result.data){
-            console.log("success");
             resolve("true");
           }else{
-            console.log("try again");
             reject("false");
           }
         })
       })
 
     };
+    var addPatient= function (event) {
+      return $q(function (resolve, reject) {
+        var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+        $http({
+          method: "POST",
+          url: API_ENDPOINT.url + "/patient",
+          data: {
+            "username": username,
+            "name": event.name,
+            "phone": event.phone,
+            "email": event.email,
+            "address": event.address,
+            "description": event.description
+          }
+        }).then(function (result) {
+            resolve(result);
+        }).catch(function(message)
+        {
+        })
+      })
+
+    };
+    var addPrescription = function (event) {
+      var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+      var timeDiff = (event.toWhichDay - event.fromWhichDay) / 3600000;
+      var diff = Math.round(timeDiff * 10) / 10;
+      return $q(function (resolve, reject) {
+        var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+        $http({
+          method: "POST",
+          url: API_ENDPOINT.url + "/prescription",
+          data: {
+            "username": username,
+            "fromWhichDay": $filter('date')(event.fromWhichDay, 'yyyy-MM-dd'),
+            "toWhichDay": $filter('date')(event.toWhichDay, 'yyyy-MM-dd'),
+            "time": diff,
+            "title": event.title,
+            "description": event.description,
+            "weekTimes": event.weekTimes,
+            "type": event.type,
+            "patient": event.patient
+          }
+        }).then(function (result) {
+          resolve(result);
+        }).catch(function (message) {
+        })
+      })
+
+    };
+    var getUserInfo = function(){
+      return $q(function (resolve, reject) {
+        var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+        $http({
+          method: "GET",
+          url: API_ENDPOINT.url + "/user/" + username,
+        }).then(function (result) {
+            resolve(result.data);
+        }).catch(function(error){
+            reject(error);
+        })
+      })
+    };
+    var getPatient = function(){
+      return $q(function (resolve, reject) {
+        var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+        $http({
+          method: "GET",
+          url: API_ENDPOINT.url + "/patient/" + username,
+        }).then(function (result) {
+          if (result.data) {
+            console.log("success");
+            resolve(result.data);
+          } else {
+            console.log("try again");
+            reject(result.data);
+          }
+        })
+      })
+
+    };
+
     var deleteSchedule = function(calendarId,scheduleId){
       return $q(function(resolve,reject){
         var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
         $http({
-          method:"POST",
+          method:"DELETE",
           url: API_ENDPOINT.url+"/schedules/delete",
           params:{
             "username": username,
@@ -129,6 +203,21 @@ angular.module('starter')
         })
       })
     };
+    var deleteDoctor = function (id) {
+      return $q(function (resolve, reject) {
+        $http({
+          method: "DELETE",
+          url: API_ENDPOINT.url + "/patient/" + id
+        }).then(function (result) {
+          if (result) {
+            resolve(result.data);
+          } else {
+            reject(result.data);
+          }
+        })
+      })
+    }
+
     var register = function(data){
       return $q(function(resolve,reject){
 
@@ -165,7 +254,16 @@ angular.module('starter')
       register: register,
       calendar: calendar,
       addEvent: addEvent,
+      addPatient: addPatient,
+      getPatient: getPatient,
       deleteSchedule: deleteSchedule,
+      getUserInfo: getUserInfo,
+      deleteDoctor: deleteDoctor,
+      addPrescription: addPrescription,
+      getUser: function(){
+        var username = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+        return username;
+      },
       isAuthenticated: function () {
         return isAuthenticated;
       }

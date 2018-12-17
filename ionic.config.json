@@ -1,9 +1,10 @@
 {
   "name": "myBlank",
-  "app_id": "",
+  "app_id": "3938a792",
   "type": "ionic1",
   "integrations": {
-    "gulp": {}
+    "gulp": {},
+    "cordova": {}
   },
   "watchPatterns": [
     "scss/**/*",

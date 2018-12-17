@@ -1,10 +1,10 @@
 <ion-view view-title="Summary">
-  <ion-header-bar class="bar-dark">
-    <button class="button button-icon ion-minus-circled"
-            ng-click="data.ShowDeleted = !data.ShowDeleted; data.ShowReorder=false"></button>
+  <ion-header-bar class="bar-dark" align-title="center">
+    <!--<button class="button button-icon ion-minus-circled"-->
+            <!--ng-click="data.ShowDeleted = !data.ShowDeleted; data.ShowReorder=false"></button>-->
     <h2 class="title">Summary</h2>
 
-    <button class="button button-icon ion-plus-round" ng-click="jumpToUrl()"></button>
+    <!--<button class="button button-icon ion-plus-round" ng-click="jumpToUrl()"></button>-->
 
   </ion-header-bar>
   <div class="bar bar-subheader item-input-inset bar-light">
@@ -22,8 +22,8 @@
             chart-data="data" chart-labels="labels" chart-options="options">
     </canvas>
 
-    <div ng-repeat=" day in calendar|  orderBy:'-date'">
-      <ion-item class="item-divider item-divider-calm dayhighlight">
+    <div ng-repeat=" day in last7days|  orderBy: '-date'">
+      <ion-item class="item-divider item-divider-calm dayhighlight" ng-if="day.schedule.length > 0">
         <h2>{{day.date}}</h2>
       </ion-item>
       <ion-list class="item-icon-right item-text-wrap" show-delete="data.ShowDeleted">
@@ -46,4 +46,8 @@
       </ion-list>
     </div>
   </ion-content>
+  <ion-floating-menu bottom="60px">
+    <ion-floating-item icon="ion-android-send" click="myEvent()" text="send to do list"></ion-floating-item>
+    <ion-floating-item icon="ion-calendar" click="jumpToUrl()" text="add new event"></ion-floating-item>
+  </ion-floating-menu>
 </ion-view>

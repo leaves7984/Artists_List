@@ -1,10 +1,11 @@
-<ion-view view-title="Artists">
-  <ion-header-bar class="bar-dark">
-    <button class="button button-icon ion-minus-circled"
-            ng-click="data.ShowDeleted = !data.ShowDeleted; data.ShowReorder=false"></button>
-    <h2 class="title">Artist List</h2>
-    <button class="button button-icon ion-navicon"
-            ng-click="data.ShowReorder = !data.ShowReorder; data.ShowDeleted=false"></button>
+<ion-view view-title="Patient">
+  <ion-header-bar class="bar-dark" align-title="center">
+    <!--<button class="button button-icon ion-minus-circled"-->
+            <!--ng-click="manage.ShowDeleted = !manage.ShowDeleted; manage.ShowReorder=false"></button>-->
+    <h2 class="title">Doctor List</h2>
+    <!--<button class="button button-icon ion-navicon"-->
+            <!--ng-click="manage.ShowReorder = !manage.ShowReorder; manage.ShowDeleted=false"></button>-->
+    <!--<button class="button button-icon ion-plus-round" ng-click="addPatient()"></button>-->
   </ion-header-bar>
   <div class="bar bar-subheader item-input-inset bar-light">
     <label class="item-input-wrapper">
@@ -16,29 +17,35 @@
     <!--refresh the page-->
     <ion-refresher on-refresh="doRefresh()"></ion-refresher>
     <!--show reorder and delete function-->
-    <ion-list show-reorder="data.ShowReorder" show-delete="data.ShowDeleted">
+    <ion-list show-reorder="manage.ShowReorder" show-delete="manage.ShowDeleted">
       <!--filter: query| complete the search function-->
       <ion-item ng-class="{'star': item.star}"
-                ng-repeat='item in artists | filter: query'
+                ng-repeat='item in data | filter: query'
                 class="item-thumbnail-left item-icon-right item-text-wrap"
                 ng-click="jumpToUrl(item)">
 
-        <img ng-src="img/{{item.shortname}}_tn.jpg" alt="Photo">
+        <img ng-src="img/skyline.jpg" alt="Photo">
         <h2>{{item.name}}</h2>
-        <h3>{{item.reknown}}</h3>
-        <p>{{item.bio | limitTo: 100}}{{item.bio.length > 150 ? '&hellip;' : ''}}</p>
-
+        <h3>{{item.description | limitTo: 100}}{{item.bio.length > 150 ? '&hellip;' : ''}}</h3>
+        <p>Contact: {{item.phone}}</p>
         <button class="button button-clear icon ion-star button-assertive"
                 ng-click="toggleStar(item)" ng-show="item.star"></button>
+
         <ion-option-button class="button-dark" ng-click="toggleStar(item)">
           <i class="icon ion-star"></i></ion-option-button>
+        <ion-option-button class="button-assertive" ng-click="onDelete(item)">
+          <i class="icon ion-trash-a"></i>
+        </ion-option-button>
 
         <ion-reorder-button class="ion-navicon"
                             on-reorder="moveItem(item,$fromIndex,$toIndex)"></ion-reorder-button>
         <ion-delete-button class="ion-minus-circled" ng-click="onItemDelete(item)"></ion-delete-button>
       </ion-item>
+
     </ion-list>
-
   </ion-content>
-
+  <ion-floating-menu bottom="60px">
+    <ion-floating-item icon="ion-document-text" click="addPrescription()" text="add prescription"></ion-floating-item>
+    <ion-floating-item icon="ion-person" click="addPatient()" text="add doctor"></ion-floating-item>
+  </ion-floating-menu>
 </ion-view>

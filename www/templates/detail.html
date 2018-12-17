@@ -1,19 +1,36 @@
 
 <ion-view title="Detail">
-  <ion-header-bar class="bar-dark">
+  <ion-header-bar class="bar-dark" align-title="center">
     <button class="button button-icon ion-ios-arrow-back"
             ng-click="goBack()"></button>
     <h2 class="title">More Info</h2>
   </ion-header-bar>
   <ion-content>
-    <ion-list class="list-inset">
-      <ion-item class="item-text-wrap">
-        <img ng-src="img/{{detail.shortname}}_tn.jpg"
-             alt="{{ detail.name }} Photo">
+    <div class="list card">
+
+      <div class="item item-avatar">
+        <img ng-src="img/skyline.jpg">
         <h2>{{ detail.name }}</h2>
-        <h3>{{ detail.reknown }}</h3>
-        <p>{{ detail.bio }}</p>
+        <p>{{ detail.sex }}</p>
+      </div>
+
+      <div class="item item-body">
+        <span>Description</span>
+        <input ng-model="event.description" type="text" placeholder="{{detail.description}}"></input>
+      </div>
+      <ion-item>
+        <span>Phone Number</span>
+        <input ng-model="event.phone" type="text" placeholder="{{detail.phone}}"></input>
       </ion-item>
-    </ion-list>
+      <ion-item>
+        <span>Email Address</span>
+        <input ng-model="event.email" type="text" placeholder="{{detail.email}}"></input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Address</ion-label>
+        <input ng-model="event.address" type="text" placeholder="{{detail.address}}"></input>
+      </ion-item>
+
+    </div>
   </ion-content>
 </ion-view>

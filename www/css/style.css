@@ -6,13 +6,6 @@ body {
 .star>.item-content{
   background-color: #EEE8D6;
 }
-/*.splash {*/
-  /*background: url('../img/skyline.jpg') no-repeat center center fixed;*/
-  /*-webkit-background-size: cover;*/
-  /*-moz-background-size: cover;*/
-  /*background-size: cover;*/
-  /*-o-background-size:cover;*/
-/*}*/
 
 .branding {
   width: 50%;
@@ -65,3 +58,31 @@ canvas{
   padding-bottom: 10px;
   padding-top: 10px;
 }
+
+.userImg img{
+  width: 45%;
+  border-radius: 50%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.userImg p{
+  color: #4b8bf4;
+  font-weight: bold;
+  text-transform: uppercase;
+
+}
+.userImg{
+  padding:20px 0;
+  text-align: center;
+}
+
+select {
+  text-indent: 45%;
+}
+.btn-cl .button{
+  border: 1px solid black;
+  outline-style: solid;
+
+}
+
+
